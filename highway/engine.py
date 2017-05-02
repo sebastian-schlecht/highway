@@ -1,5 +1,4 @@
 import multiprocessing
-import Queue
 import numpy as np
 
 import logging
@@ -53,3 +52,4 @@ class Pipeline(object):
         value = self.nodes[-1].dequeue()
         if value is None:
             raise TypeError("None type returned by pipeline. Are your nodes running?")
+        return value
