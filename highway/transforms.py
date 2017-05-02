@@ -199,3 +199,15 @@ class VerticalSlicer(Transform):
         slices = np.concatenate(slices)
         values[0] = slices
         return values
+
+
+class RescaleImages(Transform):
+    def __init__(self, scale=1. / 128., offset=128.):
+        self.scale = scale
+        self.offset = offset
+
+    def apply(self, values, deterministic=False):
+        images = values[0]
+        images = (images - self.offset) * self.scale
+        values[0] = images
+        return values

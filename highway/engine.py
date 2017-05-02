@@ -26,11 +26,8 @@ class Node(object):
         self.input = node
 
     def dequeue(self):
-        try:
-            val = self.queue.get(block=True, timeout=Node.DEFAULT_TIMEOUT)
-            return val
-        except Queue.Empty:
-            None
+        val = self.queue.get(block=True, timeout=Node.DEFAULT_TIMEOUT)
+        return val
 
     def start_daemons(self):
         for pid in range(self.n_worker):
@@ -53,4 +50,6 @@ class Pipeline(object):
             node.start_daemons()
 
     def dequeue(self):
-        return self.nodes[-1].dequeue()
+        value = self.nodes[-1].dequeue()
+        if value is None:
+            raise TypeError("None type returned by pipeline. Are your nodes running?")
