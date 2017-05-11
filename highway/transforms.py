@@ -170,7 +170,7 @@ class HistEq(Transform):
 
 
 class Slicer(Transform):
-    def __init__(self, height=0.33, width=1.0, xoffset=0, yoffset=0):
+    def __init__(self, height=0.33, width=1.0, yoffset=0., xoffset=0.):
         if height > 1. or width > 1.:
             raise ValueError("Edge length must be float between 0 and 1.")
         if xoffset > 1. or yoffset > 1.:
@@ -184,16 +184,17 @@ class Slicer(Transform):
         images = values[0]
         # NHWC
         image_height = images.shape[1]
-        image_width = images.shape[0]
-        window_height = self.height * image_height
-        window_width = self.width * image_width
-        yoffset_height = self.yoffset * image_height
-        xoffset_height = self.xoffset * image_width
+        image_width = images.shape[2]
+        window_height = int(self.height * image_height)
+        window_width = int(self.width * image_width)
+        yoffset_height = int(self.yoffset * image_height)
+        xoffset_height = int(self.xoffset * image_width)
 
         if image_height - 2 * yoffset_height < window_height:
-            raise ValueError("Cannot fit slicing window with current offset specified. Lower offset value.")
+            raise ValueError("Cannot fit slicing window with current yoffset specified. Lower offset value.")
+
         if image_width - 2 * xoffset_height < window_width:
-            raise ValueError("Cannot fit slicing window with current offset specified. Lower offset value.")
+            raise ValueError("Cannot fit slicing window with current xoffset specified. Lower offset value.")
 
         slices = []
         for idx in range(images.shape[0]):
