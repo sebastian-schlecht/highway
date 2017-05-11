@@ -58,14 +58,15 @@ class ImageFileReader(Node):
     Imagefile reader to stream classification data from a set of folders whose names are used as classes
     """
 
-    def __init__(self, data_dir, batch_size, shape):
+    def __init__(self, data_dir, batch_size, shape, file_map=None):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.shape = shape
 
         self.classes = None
         self.n_classes = None
-        self.file_map = None
+        self.file_map = file_map or None
+
 
         super(ImageFileReader, self).__init__()
 
@@ -82,7 +83,7 @@ class ImageFileReader(Node):
         while True:
             labels = []
             images = []
-            for idx in range(self.batch_size):
+            for idx in xrange(self.batch_size):
                 cls_index = np.random.randint(self.n_classes)
                 one_hot = np.zeros((1, self.n_classes), dtype=np.float32)
                 one_hot[0, cls_index] = 1.
@@ -90,6 +91,7 @@ class ImageFileReader(Node):
                 # Load a random sample from that class
                 files = self.file_map[self.classes[cls_index]]
                 filename = self.data_dir + "/" + files[np.random.randint(len(files))]
+
                 image = load_image(filename, self.shape)[np.newaxis]
 
                 labels.append(one_hot)

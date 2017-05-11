@@ -169,32 +169,41 @@ class HistEq(Transform):
         return values
 
 
-class VerticalSlicer(Transform):
-    def __init__(self, height=0.33, offset=0):
-        if height > 1.:
-            raise ValueError("Slice must be float between 0 and 1.")
-        if offset > 1.:
+class Slicer(Transform):
+    def __init__(self, height=0.33, width=1.0, xoffset=0, yoffset=0):
+        if height > 1. or width > 1.:
+            raise ValueError("Edge length must be float between 0 and 1.")
+        if xoffset > 1. or yoffset > 1.:
             raise ValueError("Offset must be float betwee 0 and 1.")
         self.height = height
-        self.offset = offset
+        self.width = width
+        self.xoffset = xoffset
+        self.yoffset = yoffset
 
     def apply(self, values, deterministic=False):
         images = values[0]
         # NHWC
         image_height = images.shape[1]
+        image_width = images.shape[0]
         window_height = self.height * image_height
-        offset_height = self.offset * image_height
+        window_width = self.width * image_width
+        yoffset_height = self.yoffset * image_height
+        xoffset_height = self.xoffset * image_width
 
-        if image_height - 2 * offset_height < window_height:
+        if image_height - 2 * yoffset_height < window_height:
+            raise ValueError("Cannot fit slicing window with current offset specified. Lower offset value.")
+        if image_width - 2 * xoffset_height < window_width:
             raise ValueError("Cannot fit slicing window with current offset specified. Lower offset value.")
 
         slices = []
         for idx in range(images.shape[0]):
             if deterministic:
-                start = int((image_height - 2 * offset_height) // 2 + offset_height)
+                ystart = int((image_height - 2 * yoffset_height) // 2 + yoffset_height)
+                xstart = int((image_width - 2 * xoffset_height) // 2 + xoffset_height)
             else:
-                start = int(np.random.randint(image_height - 2 * offset_height - window_height) + offset_height)
-            slice = images[idx, start:start + int(window_height)]
+                ytart = int(np.random.randint(image_height - 2 * yoffset_height - window_height) + yoffset_height)
+                xtart = int(np.random.randint(image_width - 2 * xoffset_height - windwo_width) + xoffset_height)
+            slice = images[idx, ystart:ystart + int(window_height), xstart:xstart + int(window_width)]
             slices.append(slice[np.newaxis])
         slices = np.concatenate(slices)
         values[0] = slices
