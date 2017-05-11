@@ -202,8 +202,17 @@ class Slicer(Transform):
                 ystart = int((image_height - 2 * yoffset_height) // 2 + yoffset_height)
                 xstart = int((image_width - 2 * xoffset_height) // 2 + xoffset_height)
             else:
-                ytart = int(np.random.randint(image_height - 2 * yoffset_height - window_height) + yoffset_height)
-                xtart = int(np.random.randint(image_width - 2 * xoffset_height - windwo_width) + xoffset_height)
+                if image_height == window_height:
+                    h = 0
+                else:
+                    h = np.random.randint(image_height - 2 * yoffset_height - window_height)
+                ystart = int(h + yoffset_height)
+
+                if image_width == window_width:
+                    w = 0
+                else:
+                    w = np.random.randint(image_width - 2 * xoffset_height - window_width)
+                xstart = int(w + xoffset_height)
             slice = images[idx, ystart:ystart + int(window_height), xstart:xstart + int(window_width)]
             slices.append(slice[np.newaxis])
         slices = np.concatenate(slices)
