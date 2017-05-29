@@ -32,6 +32,7 @@ class TestCV:
         cv = CV.from_image_folder(tmp_dir, folds=4)
         assert len(cv) == 4
         for train, val in cv:
+            assert len(train) == len(val)
             for key in train:
                 for filename in train[key]:
                     for vkey in val:

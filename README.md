@@ -7,7 +7,7 @@ run ```python setup.py install``` to install.
 
 ## Usage
 Highway is built around a sequential API to construct a pipeline that moves around data.
- 
+
 Example:
 
 ```python
@@ -26,3 +26,7 @@ p = Pipeline([img_reader, Augmentator([FlipX()])])
 # Pop a batch to feed into NNs
 images, labels = p.dequeue()
 ```
+
+## Testing
+To run the test suite, install development dependencies ```pip install -e .test```.
+From the project root, run ```pytest```.
