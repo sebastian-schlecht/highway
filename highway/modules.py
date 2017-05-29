@@ -40,12 +40,14 @@ class Augmentation(Node):
     def __init__(self, transforms=(), deterministic=False, n_worker=4, queue_size=10):
         self.transforms = transforms
         self.deterministic = deterministic
-        super(Augmentation, self).__init__(n_worker=n_worker, queue_size=queue_size)
+        super(Augmentation, self).__init__(
+            n_worker=n_worker, queue_size=queue_size)
 
     def run(self):
         while True and self.input:
             try:
-                values = self.input.queue.get(block=True, timeout=Node.DEFAULT_TIMEOUT)
+                values = self.input.queue.get(
+                    block=True, timeout=Node.DEFAULT_TIMEOUT)
             except Queue.Empty:
                 continue
 
@@ -54,10 +56,12 @@ class Augmentation(Node):
                     values = transform.apply(values, self.deterministic)
             self.queue.put(values, block=True)
 
+
 class ZMQSink(Node):
+
     def __init__(self, target, bind=True, encoding=npack.encode, flags=0):
         self.target = target
-        self.bind=bind
+        self.bind = bind
         self.encoding = encoding
         self.flags = flags
         super(ZMQSink, self).__init__(n_worker=1)
@@ -73,7 +77,8 @@ class ZMQSink(Node):
 
         while True and self.input:
             try:
-                values = self.input.queue.get(block=True, timeout=Node.DEFAULT_TIMEOUT)
+                values = self.input.queue.get(
+                    block=True, timeout=Node.DEFAULT_TIMEOUT)
             except Queue.Empty:
                 continue
 
@@ -83,8 +88,8 @@ class ZMQSink(Node):
                 result = socket.send(serialized, flags=self.flags)
 
 
-
 class ZMQSource(Node):
+
     def __init__(self, source, bind=False, decoding=npack.decode, flags=0, copy=True, track=False):
         self.source = source
         self.bind = bind
@@ -104,14 +109,14 @@ class ZMQSource(Node):
 
         while True:
             try:
-                serialized = socket.recv(flags=self.flags, copy=self.copy, track=self.track)
+                serialized = socket.recv(
+                    flags=self.flags, copy=self.copy, track=self.track)
                 values = msgpack.unpackb(serialized, object_hook=self.decoding)
             except Exception as e:
                 # raise everything for now
                 raise e
             if values is not None:
                 self.queue.put(values, block=True)
-
 
 
 class ImageFileReader(Node):
@@ -129,11 +134,11 @@ class ImageFileReader(Node):
         self.n_classes = None
         self.file_map = file_map or None
 
-
         super(ImageFileReader, self).__init__()
 
     def run(self):
-        classes = [cls for cls in os.listdir(self.data_dir) if os.path.isdir(self.data_dir + "/" + cls)]
+        classes = [cls for cls in os.listdir(
+            self.data_dir) if os.path.isdir(self.data_dir + "/" + cls)]
         classes.sort()
         self.classes = classes
         self.n_classes = len(self.classes)
@@ -152,7 +157,8 @@ class ImageFileReader(Node):
 
                 # Load a random sample from that class
                 files = self.file_map[self.classes[cls_index]]
-                filename = self.data_dir + "/" + files[np.random.randint(len(files))]
+                filename = self.data_dir + "/" + \
+                    files[np.random.randint(len(files))]
 
                 image = load_image(filename, self.shape)[np.newaxis]
 
@@ -161,4 +167,5 @@ class ImageFileReader(Node):
 
             images = np.concatenate(images)
             labels = np.concatenate(labels)
-            self.queue.put([images.astype(np.float32), labels.astype(np.float32)], block=True)
+            self.queue.put([images.astype(np.float32),
+                            labels.astype(np.float32)], block=True)

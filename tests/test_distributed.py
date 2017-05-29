@@ -10,7 +10,6 @@ class TestPipeline:
         worker = Pipeline([ZMQSource("tcp://127.0.0.1:5555"), ZMQSink("tcp://127.0.0.1:5556")])
         source = Pipeline([Noise(data_shape=(1, 2), n_tensors=1), ZMQSink("tcp://127.0.0.1:5555")])
 
-
         # Check 10 batches
         for _ in range(10):
             time.sleep(0.05)

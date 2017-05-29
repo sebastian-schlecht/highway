@@ -5,10 +5,10 @@ Multi-threaded data access pipeline for tensor data.
 run ```python setup.py install``` to install.
 
 
-## Usage
+## API
 Highway is built around a sequential API to construct a pipeline that moves around data.
 
-Example:
+Simple example:
 
 ```python
 from highway.engine import Pipeline
@@ -25,6 +25,32 @@ p = Pipeline([img_reader, Augmentation([FlipX()])])
 
 # Pop a batch to feed into NNs
 images, labels = p.dequeue()
+```
+
+
+If you are handling massive data augmentations, you can distribute processing across different machines and scale augmentations according to the machines' CPU capabilities using the ZMQ transport layer. Note: Usually, ```bind``` is set to True on worker machines for the sink and False on the training machine for the source. The reason is to minimize port usage and thus the training machine collects data from all concurrent worker machines.
+
+```python
+
+from highway.engine import Pipeline
+from highway.modules import Augmentation, ImageFileReader, ZMQSink, ZMQSource
+from highway.transforms import FlipX
+
+data_dir = "../some-dir"
+
+if is_data_source_machine:
+  # Create an image reader that loads images from a directory containing sub-directories for each label
+  img_reader = ImageFileReader(data_dir, 16, (240, 320))
+  p = Pipeline([img_reader, ZMQSink("tcp://some-ip:some-port")])
+
+elif is_worker_machine:
+  # In case we're on a worker machine, pull some remote batches, augment them and push them into the training machine
+  p = Pipeline([ZMQSource("tcp://some-ip:some-port"),  Augmentation([FlipX(), ...], ZMQSink("tcp://some-other-ip:some-port", bind=False)])
+
+else:
+  # Training machine
+  p = Pipeline([ZMQSource("tcp://some-other-ip:some-port", bind=True)])
+  images, labels = p.dequeue()
 ```
 
 ## Testing
