@@ -18,15 +18,15 @@ class FlipX(Transform):
     """
     Flig image along x axis
     """
-    def __init__(self, image_index=0):
-        self.image_index= image_index
+    def __init__(self, images_index=0):
+        self.images_index= images_index
 
     def apply(self, values, deterministic=False):
 
         if deterministic:
             return values
         else:
-            images = values[self.image_index]
+            images = values[self.images_index]
             for idx in range(images.shape[0]):
                 image = images[idx]
                 p = np.random.randint(2)
@@ -44,17 +44,17 @@ class PadCrop(Transform):
     Pad image with zeros and crop randomly
     """
 
-    def __init__(self, padsize=4, mode='constant', image_index=0):
+    def __init__(self, padsize=4, mode='constant', images_index=0):
         self.padsize = padsize
         self.mode = mode
-        self.image_index = image_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
 
         if deterministic:
             return values
         else:
-            images = values[self.image_index]
+            images = values[self.images_index]
             for idx in range(images.shape[0]):
                 image = images[idx]
                 cx = np.random.randint(2 * self.padsize)
@@ -80,17 +80,17 @@ class AdditiveNoise(Transform):
     Additive noise for images
     """
 
-    def __init__(self, strength=0.2, mu=0, sigma=50, image_index=0):
+    def __init__(self, strength=0.2, mu=0, sigma=50, images_index=0):
         self.strength = strength
         self.mu = mu
         self.sigma = sigma
-        self.image_index = image_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
             return values
         else:
-            images = values[self.image_index]
+            images = values[self.images_index]
             noise = np.random.normal(self.mu, self.sigma, size=images.shape)
             noisy = images + self.strength * noise
             values[0] = noisy
@@ -102,15 +102,15 @@ class Shift(Transform):
     Shift/Translate image randomly. Shift indicates the percentage of the images width to be shifted
     """
 
-    def __init__(self, shift, mode='constant', image_index=0):
+    def __init__(self, shift, mode='constant', images_index=0):
         self.shift = shift
         self.mode = mode
-        self.image_index = image_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
             return values
-        images = values[self.image_index]
+        images = values[self.images_index]
         for idx in range(images.shape[0]):
             image = images[idx]
             x_range = self.shift * image.shape[1]
@@ -127,16 +127,16 @@ class Rotate(Transform):
     Rotate image along a random angle within (-angle, +angle)
     """
 
-    def __init__(self, angle, order=0, reshape=False, image_index=0):
+    def __init__(self, angle, order=0, reshape=False, images_index=0):
         self.angle = angle
         self.order = order
         self.reshape = reshape
-        self.image_index = image_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
             return values
-        images = values[self.image_index]
+        images = values[self.images_index]
         for idx in range(images.shape[0]):
             image = images[idx]
             rot_angle = np.random.randint(-self.angle, self.angle)
@@ -150,16 +150,16 @@ class Zoom(Transform):
     Zoom image with a factor f in (1-fac, 1+fac)
     """
 
-    def __init__(self, fac, order=0, image_index=0):
+    def __init__(self, fac, order=0, images_index=0):
         self.fac = fac
         self.order = order
-        self.image_index = image_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
             return values
 
-        images = values[self.image_index]
+        images = values[self.images_index]
         for idx in range(images.shape[0]):
             image = images[idx]
             fac = np.random.uniform(1 - self.fac, 1 + self.fac)
@@ -169,18 +169,18 @@ class Zoom(Transform):
 
 
 class HistEq(Transform):
-    def __init__(self,image_index=0):
-        self.image_index = image_index
+    def __init__(self,images_index=0):
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
-        images = values[self.image_index]
+        images = values[self.images_index]
         for idx in range(images.shape[0]):
             images[idx] = image_histogram_equalization(images[idx])
         return values
 
 
 class Slicer(Transform):
-    def __init__(self, height=0.33, width=1.0, yoffset=0., xoffset=0., image_index=0):
+    def __init__(self, height=0.33, width=1.0, yoffset=0., xoffset=0., images_index=0):
         if height > 1. or width > 1.:
             raise ValueError("Edge length must be float between 0 and 1.")
         if xoffset > 1. or yoffset > 1.:
@@ -190,10 +190,10 @@ class Slicer(Transform):
         self.width = width
         self.xoffset = xoffset
         self.yoffset = yoffset
-        self.image_index= image_index
+        self.images_index= images_index
 
     def apply(self, values, deterministic=False):
-        images = values[self.image_index]
+        images = values[self.images_index]
         # NHWC
         image_height = images.shape[1]
         image_width = images.shape[2]
@@ -233,13 +233,13 @@ class Slicer(Transform):
 
 
 class RescaleImages(Transform):
-    def __init__(self, scale=1. / 128., offset=128., image_index=0):
+    def __init__(self, scale=1. / 128., offset=128., images_index=0):
         self.scale = scale
         self.offset = offset
-        self.image_index = image_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
-        images = values[self.image_index]
+        images = values[self.images_index]
         images = (images - self.offset) * self.scale
         values[0] = images
         return values

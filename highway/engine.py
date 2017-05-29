@@ -24,8 +24,8 @@ class Node(object):
     def attach(self, node):
         self.input = node
 
-    def dequeue(self):
-        val = self.queue.get(block=True, timeout=Node.DEFAULT_TIMEOUT)
+    def dequeue(self, block=True):
+        val = self.queue.get(block=block, timeout=Node.DEFAULT_TIMEOUT)
         return val
 
     def start_daemons(self):
@@ -48,8 +48,8 @@ class Pipeline(object):
         for node in self.nodes:
             node.start_daemons()
 
-    def dequeue(self):
-        value = self.nodes[-1].dequeue()
+    def dequeue(self, block=True):
+        value = self.nodes[-1].dequeue(block)
         if value is None:
             raise TypeError("None type returned by pipeline. Are your nodes running?")
         return value
