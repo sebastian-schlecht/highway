@@ -29,7 +29,7 @@ class Noise(Node):
             self.queue.put(tensors, block=True)
 
 
-class Augmentator(Node):
+class Augmentation(Node):
     """
     Node that applies a certain set of transforms in sequence.
     """
@@ -37,7 +37,7 @@ class Augmentator(Node):
     def __init__(self, transforms=(), deterministic=False, n_worker=4, queue_size=10):
         self.transforms = transforms
         self.deterministic = deterministic
-        super(Augmentator, self).__init__(n_worker=n_worker, queue_size=queue_size)
+        super(Augmentation, self).__init__(n_worker=n_worker, queue_size=queue_size)
 
     def run(self):
         while True and self.input:

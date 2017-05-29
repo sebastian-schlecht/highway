@@ -1,7 +1,7 @@
 import time
 
 from highway.engine import Pipeline
-from highway.modules import Noise, Augmentator
+from highway.modules import Noise, Augmentation
 
 
 class TestPipeline:
@@ -13,7 +13,7 @@ class TestPipeline:
         assert data[0].shape == (1, 2)
 
     def test_two_nodes(self):
-        p = Pipeline([Noise(data_shape=(3, 5), n_tensors=2), Augmentator()])
+        p = Pipeline([Noise(data_shape=(3, 5), n_tensors=2), Augmentation()])
         time.sleep(0.1)
         data = p.dequeue()
         assert len(data) == 2
