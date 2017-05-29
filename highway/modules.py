@@ -73,7 +73,7 @@ class ZMQSink(Node):
         if self.bind:
             socket.bind(self.target)
         else:
-            socket.conncet(self.target)
+            socket.connect(self.target)
 
         while True and self.input:
             try:
