@@ -4,7 +4,7 @@ from highway.engine import Pipeline
 from highway.modules import Noise, ZMQSink, ZMQSource
 
 
-class TestPipeline:
+class TestDistributed:
     def test_zmq_loopback(self):
         sink = Pipeline([ZMQSource("tcp://127.0.0.1:5556")])
         worker = Pipeline([ZMQSource("tcp://127.0.0.1:5555"), ZMQSink("tcp://127.0.0.1:5556")])

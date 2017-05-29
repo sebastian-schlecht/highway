@@ -4,7 +4,7 @@ from highway.engine import Pipeline
 from highway.modules import Noise, Augmentation
 
 
-class TestPipeline:
+class TestEngine:
     def test_single_node(self):
         p = Pipeline([Noise(data_shape=(1, 2), n_tensors=1)])
         time.sleep(0.1)
