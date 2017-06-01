@@ -12,7 +12,7 @@ Simple example:
 
 ```python
 from highway.engine import Pipeline
-from highway.modules import Augmentation, ImageFileReader
+from highway.modules import Augmentations, ImageFileReader
 from highway.transforms import FlipX
 
 data_dir = "../some-dir"
@@ -21,7 +21,7 @@ data_dir = "../some-dir"
 img_reader = ImageFileReader(data_dir, 16, (240, 320))
 
 # Build the pipeline. Randomly flip images along the x axis with a probability p=0.5
-p = Pipeline([img_reader, Augmentation([FlipX()])])
+p = Pipeline([img_reader, Augmentations([FlipX()])])
 
 # Pop a batch to feed into NNs
 images, labels = p.dequeue()
@@ -33,7 +33,7 @@ If you are handling massive data augmentations, you can distribute processing ac
 ```python
 
 from highway.engine import Pipeline
-from highway.modules import Augmentation, ImageFileReader, ZMQSink, ZMQSource
+from highway.modules import Augmentations, ImageFileReader, ZMQSink, ZMQSource
 from highway.transforms import FlipX
 
 data_dir = "../some-dir"
@@ -45,7 +45,7 @@ if is_data_source_machine:
 
 elif is_worker_machine:
   # In case we're on a worker machine, pull some remote batches, augment them and push them into the training machine
-  p = Pipeline([ZMQSource("tcp://some-ip:some-port"),  Augmentation([FlipX(), ...], ZMQSink("tcp://some-other-ip:some-port", bind=False)])
+  p = Pipeline([ZMQSource("tcp://some-ip:some-port"),  Augmentations([FlipX(), ...], ZMQSink("tcp://some-other-ip:some-port", bind=False)])
 
 else:
   # Training machine
