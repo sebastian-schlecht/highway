@@ -56,3 +56,6 @@ else:
 ## Testing
 To run the test suite, install development dependencies ```pip install -e .test```.
 From the project root, run ```pytest```.
+
+## Benchmarking
+Benchmark scripts are located in the folder ```benchmarks```. Right now, we measured that inter-process communication roughly maxes out at 500 Mbytes/s (depending on the machine you're using). For TCP communication we measured roughly 120Mbytes/s to be the upper limit (again, depends on the machine you're using but this may provide an idea where we're heading).
