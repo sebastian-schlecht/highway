@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import ndimage
+from scipy import misc
 
 from transforms import clipped_zoom
 from transforms import image_histogram_equalization
@@ -20,12 +21,31 @@ class Augmentation(object):
         raise NotImplementedError("Implement apply() of Augmentation.")
 
 
+class Resize(Augmentation):
+
+    def __init__(self, shape, method='nearest', images_index=0):
+        self.shape = shape
+        self.method = method
+        self.images_index = images_index
+
+    def apply(self, values, deterministic=False):
+        images = values[self.images_index]
+        reshaped = []
+        for image in images:
+            reshaped.append(misc.imresize(image, self.shape,
+                                          interp=self.method)[np.newaxis])
+
+        values[self.images_index] = np.concatenate(reshaped)
+        return values
+
+
 class FlipX(Augmentation):
     """
     Flig image along x axis
     """
+
     def __init__(self, images_index=0):
-        self.images_index= images_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
@@ -133,7 +153,8 @@ class Rotate(Augmentation):
         for idx in range(images.shape[0]):
             image = images[idx]
             rot_angle = np.random.randint(-self.angle, self.angle)
-            new_image = rotate(image, rot_angle, order=self.order, reshape=self.reshape)
+            new_image = rotate(
+                image, rot_angle, order=self.order, reshape=self.reshape)
             images[idx] = new_image
         return values
 
@@ -162,7 +183,8 @@ class Zoom(Augmentation):
 
 
 class HistEq(Augmentation):
-    def __init__(self,images_index=0):
+
+    def __init__(self, images_index=0):
         self.images_index = images_index
 
     def apply(self, values, deterministic=False):
@@ -173,6 +195,7 @@ class HistEq(Augmentation):
 
 
 class Slicer(Augmentation):
+
     def __init__(self, height=0.33, width=1.0, yoffset=0., xoffset=0., images_index=0):
         if height > 1. or width > 1.:
             raise ValueError("Edge length must be float between 0 and 1.")
@@ -183,7 +206,7 @@ class Slicer(Augmentation):
         self.width = width
         self.xoffset = xoffset
         self.yoffset = yoffset
-        self.images_index= images_index
+        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         images = values[self.images_index]
@@ -196,29 +219,36 @@ class Slicer(Augmentation):
         xoffset_height = int(self.xoffset * image_width)
 
         if image_height - 2 * yoffset_height < window_height:
-            raise ValueError("Cannot fit slicing window with current yoffset specified. Lower offset value.")
+            raise ValueError(
+                "Cannot fit slicing window with current yoffset specified. Lower offset value.")
 
         if image_width - 2 * xoffset_height < window_width:
-            raise ValueError("Cannot fit slicing window with current xoffset specified. Lower offset value.")
+            raise ValueError(
+                "Cannot fit slicing window with current xoffset specified. Lower offset value.")
 
         slices = []
         for idx in range(images.shape[0]):
             if deterministic:
-                ystart = int((image_height - 2 * yoffset_height) // 2 + yoffset_height)
-                xstart = int((image_width - 2 * xoffset_height) // 2 + xoffset_height)
+                ystart = int((image_height - 2 * yoffset_height) //
+                             2 + yoffset_height)
+                xstart = int((image_width - 2 * xoffset_height) //
+                             2 + xoffset_height)
             else:
                 if image_height == window_height:
                     h = 0
                 else:
-                    h = np.random.randint(image_height - 2 * yoffset_height - window_height)
+                    h = np.random.randint(
+                        image_height - 2 * yoffset_height - window_height)
                 ystart = int(h + yoffset_height)
 
                 if image_width == window_width:
                     w = 0
                 else:
-                    w = np.random.randint(image_width - 2 * xoffset_height - window_width)
+                    w = np.random.randint(
+                        image_width - 2 * xoffset_height - window_width)
                 xstart = int(w + xoffset_height)
-            slice = images[idx, ystart:ystart + int(window_height), xstart:xstart + int(window_width)]
+            slice = images[idx, ystart:ystart +
+                           int(window_height), xstart:xstart + int(window_width)]
             slices.append(slice[np.newaxis])
         slices = np.concatenate(slices)
         values[0] = slices
@@ -226,6 +256,7 @@ class Slicer(Augmentation):
 
 
 class RescaleImages(Augmentation):
+
     def __init__(self, scale=1. / 128., offset=128., images_index=0):
         self.scale = scale
         self.offset = offset

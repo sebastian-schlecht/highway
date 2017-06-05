@@ -6,7 +6,7 @@ sys.path.append("..")
 from highway.engine import Pipeline
 from highway.modules import Noise, ZMQSink, ZMQSource
 
-N = 1000
+N = 100
 data_shape = (320, 240, 3)
 
 sink = Pipeline([ZMQSource("ipc://sink")])
