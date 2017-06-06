@@ -57,5 +57,15 @@ else:
 To run the test suite, install development dependencies ```pip install -e .test```.
 From the project root, run ```pytest```.
 
-## Benchmarking
-Benchmark scripts are located in the folder ```benchmarks```. Right now, we measured that inter-process communication roughly maxes out at 500 Mbytes/s (depending on the machine you're using). For TCP communication we measured roughly 120Mbytes/s to be the upper limit (again, depends on the machine you're using but this may provide an idea where we're heading).
+## Benchmarking and performance
+Benchmark scripts are located in the folder ```benchmarks```. Right now, we measured that inter-process communication roughly maxes out at 500 Mbytes/s (depending on the machine you're using). For TCP communication we measured roughly 120Mbytes/s to be the upper limit (again, depends on the machine you're using but this may provide an idea where we're heading). We're not planning to add custom queues and message services ourselves so performance may be inherently limited by the tools that are available. Right now, we use [ZMQ](http://zeromq.org/) for messaging and [msgpack](https://pypi.python.org/pypi/msgpack-python) for serialization which offer good performance but we yet have to validate whether that's enough in the future.
+
+## What we're planning to add
+Some features are not there yet but may come in the near future. This includes, but is not limited to:
+
+- Database interfaces to stream data from/to fast key/value stores like LevelDB or RocksDB
+- Debugging facilities
+- More augmentations and potentially a cleaner programming API for them
+- More examples
+- Support for object-detection in PASCAL VOC format.
+- Performance tweaks
