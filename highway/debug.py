@@ -23,35 +23,6 @@ class JpgDumper(StreamWriter):
             imsave(self.out_dir + "/" + str(ct) + ".jpg", item)
             ct += 1
 
-"""
-ct = 0
-                    for item in stream[0]:
-                        with open(self.out_dir + "/" + str(ct) + self.extension, 'wb') as target:
-                            target.write(item)
-                        sys.stdout.flush()
-                        ct += 1
-"""
-def RandomDirectoryImageReaderDumper(payload, out_dir):
-    """
-    Since the format of a nodes' data is arbitrary, special implementations of debug functions are required.
-    """
-    ct = 0
-    batch = payload[0]
-    for item in batch:
-        imsave(out_dir + "/" + str(ct) + ".jpg", item)
-        ct += 1
-
-def DirectoryImageReaderDumper(payload, out_dir):
-    """
-    Since the format of a nodes' data is arbitrary, special implementations of debug functions are required.
-    """
-    batch = payload[0]
-    indexes = payload[1]
-    ct = 0
-    for item in batch:
-        imsave(out_dir + "/" + str(indexes[ct]) + ".jpg", item)
-        ct += 1
-
 class QueueInputBenchmark(Node):
     """
     Benchmarks the payload rate which is received by this node's input queue.
