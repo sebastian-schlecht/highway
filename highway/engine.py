@@ -14,7 +14,7 @@ class Node(object):
         np.random.seed(pid)
         self.run()
 
-    def __init__(self, n_worker=1, queue_size=10):
+    def __init__(self, n_worker=1, queue_size=128):
         self.n_worker = n_worker
         self.queue = multiprocessing.Queue(maxsize=queue_size)
         self.lock = multiprocessing.Lock()
@@ -24,9 +24,12 @@ class Node(object):
     def attach(self, node):
         self.input = node
 
-    def dequeue(self, block=True):
-        val = self.queue.get(block=block, timeout=Node.DEFAULT_TIMEOUT)
+    def dequeue(self, block=True, timeout=DEFAULT_TIMEOUT):
+        val = self.queue.get(block=block, timeout=timeout)
         return val
+
+    def enqueue(self, data, block=True):
+        self.queue.put(data, block)
 
     def start_daemons(self):
         for pid in range(self.n_worker):
