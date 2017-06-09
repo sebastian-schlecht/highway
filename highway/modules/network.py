@@ -1,6 +1,7 @@
 import msgpack
 import msgpack_numpy as npack
 import zmq
+import Queue
 
 from ..engine import Node
 

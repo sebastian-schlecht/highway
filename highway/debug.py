@@ -23,14 +23,14 @@ class JpgDumper(StreamWriter):
             imsave(self.out_dir + "/" + str(ct) + ".jpg", item)
             ct += 1
 
-class QueueInputBenchmark(Node):
+class Benchmark(Node):
     """
     Benchmarks the payload rate which is received by this node's input queue.
     Be aware that this node deques everything and therefore must be the last node in the pipeline.
     The benchmark's output is not entirely accurate since measurement of the payload requires serializing of the received objects
     which takes additional time.
     """
-    N = 5
+    N = 100
 
     def __init__(self):
         super(QueueInputBenchmark, self).__init__()

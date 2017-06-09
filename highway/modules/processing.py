@@ -1,4 +1,5 @@
-from multiprocessing import Queue
+import Queue
+import numpy as np
 
 from ..engine import Node
 
@@ -21,8 +22,9 @@ class Noise(Node):
                     data = np.zeros(self.data_shape, dtype=np.float32)
                 else:
                     data = np.random.uniform(size=self.data_shape)
-                tensors.append(data)
-            self.queue.put({images: tensors}, block=True)
+                tensors.append(data[np.newaxis])
+            tensors = np.concatenate(tensors)
+            self.queue.put({"images": tensors}, block=True)
 
 class Augmentations(Node):
     """
