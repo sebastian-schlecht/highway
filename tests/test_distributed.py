@@ -1,7 +1,8 @@
 import time
 
 from highway.engine import Pipeline
-from highway.modules import Noise, ZMQSink, ZMQSource
+from highway.modules.processing import Noise
+from highway.modules.network import ZMQSink, ZMQSource
 
 
 class TestDistributed:
@@ -14,5 +15,5 @@ class TestDistributed:
         for _ in range(10):
             time.sleep(0.05)
             data = sink.dequeue()
-            assert len(data) == 1
-            assert data[0].shape == (1, 2)
+            assert len(data["images"]) == 1
+            assert data["images"].shape == (1, 1, 2)

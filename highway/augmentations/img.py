@@ -1,15 +1,8 @@
-import numpy as np
-from scipy import ndimage
-from scipy import misc
+import abc
 
-from transforms import clipped_zoom
-from transforms import image_histogram_equalization
-from transforms import flip_x
-from transforms import pad
-from transforms import crop
-from transforms import add_noise
-from transforms import shift
-from transforms import rotate
+from scipy.misc import imresize
+
+from ..transforms.img import *
 
 
 class Augmentation(object):
@@ -17,26 +10,9 @@ class Augmentation(object):
     Apply a certain augmentation onto a set of data tensors.
     """
 
+    @abc.abstractmethod
     def apply(self, values, deterministic=False):
-        raise NotImplementedError("Implement apply() of Augmentation.")
-
-
-class Resize(Augmentation):
-
-    def __init__(self, shape, method='nearest', images_index=0):
-        self.shape = shape
-        self.method = method
-        self.images_index = images_index
-
-    def apply(self, values, deterministic=False):
-        images = values[self.images_index]
-        reshaped = []
-        for image in images:
-            reshaped.append(misc.imresize(image, self.shape,
-                                          interp=self.method)[np.newaxis])
-
-        values[self.images_index] = np.concatenate(reshaped)
-        return values
+        return
 
 
 class FlipX(Augmentation):
@@ -44,14 +20,12 @@ class FlipX(Augmentation):
     Flig image along x axis
     """
 
-    def __init__(self, images_index=0):
-        self.images_index = images_index
-
     def apply(self, values, deterministic=False):
         if deterministic:
+            # todo
             return values
         else:
-            images = values[self.images_index]
+            images = values['images']
             for idx in range(images.shape[0]):
                 image = images[idx]
                 p = np.random.randint(2)
@@ -66,17 +40,17 @@ class PadCrop(Augmentation):
     Pad image with zeros and crop randomly
     """
 
-    def __init__(self, padsize=4, mode='constant', images_index=0):
+    def __init__(self, padsize=4, mode='constant'):
         self.padsize = padsize
         self.mode = mode
-        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
 
         if deterministic:
+            # todo
             return values
         else:
-            images = values[self.images_index]
+            images = values['images']
             for idx in range(images.shape[0]):
                 image = images[idx]
                 cx = np.random.randint(2 * self.padsize)
@@ -94,19 +68,19 @@ class AdditiveNoise(Augmentation):
     Additive noise for images
     """
 
-    def __init__(self, strength=0.2, mu=0, sigma=50, images_index=0):
+    def __init__(self, strength=0.2, mu=0, sigma=50):
         self.strength = strength
         self.mu = mu
         self.sigma = sigma
-        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
+            # todo
             return values
         else:
-            images = values[self.images_index]
+            images = values['images']
             noisy = add_noise(images, self.strengt, self.mu, self.sigma)
-            values[self.images_index] = noisy
+            values['images'] = noisy
             return values
 
 
@@ -115,15 +89,15 @@ class Shift(Augmentation):
     Shift/Translate image randomly. Shift indicates the percentage of the images width to be shifted
     """
 
-    def __init__(self, shift, mode='constant', images_index=0):
+    def __init__(self, shift, mode='constant'):
         self.shift = shift
         self.mode = mode
-        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
+            # todo
             return values
-        images = values[self.images_index]
+        images = values['images']
         for idx in range(images.shape[0]):
             image = images[idx]
             x_range = self.shift * image.shape[1]
@@ -140,16 +114,16 @@ class Rotate(Augmentation):
     Rotate image along a random angle within (-angle, +angle)
     """
 
-    def __init__(self, angle, order=0, reshape=False, images_index=0):
+    def __init__(self, angle, order=0, reshape=False):
         self.angle = angle
         self.order = order
         self.reshape = reshape
-        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
+            # todo
             return values
-        images = values[self.images_index]
+        images = values['images']
         for idx in range(images.shape[0]):
             image = images[idx]
             rot_angle = np.random.randint(-self.angle, self.angle)
@@ -164,16 +138,16 @@ class Zoom(Augmentation):
     Zoom image with a factor f in (1-fac, 1+fac)
     """
 
-    def __init__(self, fac, order=0, images_index=0):
+    def __init__(self, fac, order=0):
         self.fac = fac
         self.order = order
-        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
         if deterministic:
+            # todo
             return values
 
-        images = values[self.images_index]
+        images = values['images']
         for idx in range(images.shape[0]):
             image = images[idx]
             fac = np.random.uniform(1 - self.fac, 1 + self.fac)
@@ -184,11 +158,8 @@ class Zoom(Augmentation):
 
 class HistEq(Augmentation):
 
-    def __init__(self, images_index=0):
-        self.images_index = images_index
-
     def apply(self, values, deterministic=False):
-        images = values[self.images_index]
+        images = values['images']
         for idx in range(images.shape[0]):
             images[idx] = image_histogram_equalization(images[idx])
         return values
@@ -196,7 +167,7 @@ class HistEq(Augmentation):
 
 class Slicer(Augmentation):
 
-    def __init__(self, height=0.33, width=1.0, yoffset=0., xoffset=0., images_index=0):
+    def __init__(self, height=0.33, width=1.0, yoffset=0., xoffset=0):
         if height > 1. or width > 1.:
             raise ValueError("Edge length must be float between 0 and 1.")
         if xoffset > 1. or yoffset > 1.:
@@ -206,10 +177,9 @@ class Slicer(Augmentation):
         self.width = width
         self.xoffset = xoffset
         self.yoffset = yoffset
-        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
-        images = values[self.images_index]
+        images = values['images']
         # NHWC
         image_height = images.shape[1]
         image_width = images.shape[2]
@@ -251,19 +221,81 @@ class Slicer(Augmentation):
                            int(window_height), xstart:xstart + int(window_width)]
             slices.append(slice[np.newaxis])
         slices = np.concatenate(slices)
-        values[0] = slices
+        values['images'] = slices
         return values
 
 
 class RescaleImages(Augmentation):
 
-    def __init__(self, scale=1. / 128., offset=128., images_index=0):
+    def __init__(self, scale=1. / 128., offset=128.):
         self.scale = scale
         self.offset = offset
-        self.images_index = images_index
 
     def apply(self, values, deterministic=False):
-        images = values[self.images_index]
+        images = values['images']
         images = (images - self.offset) * self.scale
-        values[0] = images
+        values['images'] = images
+        return values
+
+
+class TopCenterCrop(Augmentation):
+    """
+    Crop images at the top center
+    """
+
+    def __init__(self, crop_shape):
+        self.crop_shape = crop_shape
+
+    def apply(self, values, deterministic=True):
+        # todo random top center cropping
+        images = values['images']
+        for idx in range(len(images)):
+            img = images[idx]
+            orig_shape = img.shape
+            h0 = 0
+            w0 = int((orig_shape[1] - self.crop_shape[1]) * 0.5)
+            images[idx] = img[h0:h0 + self.crop_shape[0],
+                              w0:w0 + self.crop_shape[1]]
+        return values
+
+
+class ResizeWidthKeepRatio(Augmentation):
+    """
+    Resize the width of the image and maintain the aspect ratio for later cropping.
+    """
+
+    def __init__(self, size):
+        self.size = size
+
+    def apply(self, values, deterministic=True):
+        # todo random resizing
+        images = values['images']
+        for idx in range(len(images)):
+            img = images[idx]
+            w, h = img.shape[:2]
+            scale = self.size / h
+            desSize = map(int, [scale * w, scale * h])
+            images[idx] = imresize(img, tuple(desSize), interp='nearest')
+            if images[idx].ndim == 3 and images[idx].ndim == 2:
+                images[idx] = images[idx][:, :, np.newaxis]
+
+        return values
+
+
+class Resize(Augmentation):
+    """
+    Resize the image (input = tuple)
+    """
+
+    def __init__(self, shape):
+        self.shape = shape
+
+    def apply(self, values, deterministic=True):
+        # todo random resizing
+        images = values['images']
+        for idx in range(len(images)):
+            images[idx] = imresize(images[idx], self.shape, interp='nearest')
+            if images[idx].ndim == 3 and images[idx].ndim == 2:
+                images[idx] = images[idx][:, :, np.newaxis]
+
         return values

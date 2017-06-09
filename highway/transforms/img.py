@@ -1,8 +1,6 @@
 import numpy as np
 from scipy import ndimage
 
-
-
 def flip_x(image):
     return image[:,::-1]
 
@@ -19,7 +17,6 @@ def crop(image, center, size):
     cy, cx = center
     y, x = size
     return image[cy:cy+h, cx:cx+w]
-
 
 def add_noise(tensor, strength=0.2, mu=0, sigma=50):
     noise = np.random.normal(self.mu, self.sigma, size=images.shape)

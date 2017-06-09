@@ -1,10 +1,10 @@
 import numpy as np
 
-from highway.augmentations import FlipX
+from highway.augmentations.img import FlipX
 
 
 class TestTransforms:
     def test_flip_x(self):
         arr = np.eye(10, 10, 3)[np.newaxis]
-        r = FlipX().apply([arr])
-        assert r[0].all() == arr[:, ::-1].all()
+        r = FlipX().apply({"images": arr})
+        assert r["images"].all() == arr[:, ::-1].all()
