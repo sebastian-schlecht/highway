@@ -101,7 +101,7 @@ class JpgSaver(StreamWriter):
 
     def __init__(self, out_dir, file_type=".jpg"):
         self.out_dir = out_dir
-        self.file_type= file_type
+        self.file_type = file_type
         super(JpgSaver, self).__init__(False)
 
     def dump_func(self, stream):

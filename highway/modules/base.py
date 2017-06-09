@@ -3,11 +3,13 @@ from multiprocessing import Queue
 
 from ..engine import Node
 
+
 class StreamWriter(Node):
     """
     Dumps the items in the input queue and enques them again for further use.
     This is the base node to persist streams of data
     """
+
     def __init__(self, enqueue=False):
         self.enqueue_items = enqueue
         super(StreamWriter, self).__init__()

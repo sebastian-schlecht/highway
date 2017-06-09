@@ -3,6 +3,7 @@ import numpy as np
 
 from ..engine import Node
 
+
 class Noise(Node):
     """
     Generate uniform noise for testing purposes.
@@ -25,6 +26,7 @@ class Noise(Node):
                 tensors.append(data[np.newaxis])
             tensors = np.concatenate(tensors)
             self.queue.put({"images": tensors}, block=True)
+
 
 class Augmentations(Node):
     """

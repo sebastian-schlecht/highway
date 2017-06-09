@@ -5,6 +5,7 @@ import Queue
 
 from ..engine import Node
 
+
 class ZMQSink(Node):
 
     def __init__(self, target, bind=True, encoding=npack.encode, flags=0):
@@ -32,7 +33,8 @@ class ZMQSink(Node):
 
             if values is not None:
                 # Send values ZMQ
-                serialized = msgpack.packb(values, default=self.encoding, use_bin_type=True)
+                serialized = msgpack.packb(
+                    values, default=self.encoding, use_bin_type=True)
                 result = socket.send(serialized, flags=self.flags)
 
 
@@ -59,7 +61,8 @@ class ZMQSource(Node):
             try:
                 serialized = socket.recv(
                     flags=self.flags, copy=self.copy, track=self.track)
-                values = msgpack.unpackb(serialized, object_hook=self.decoding, encoding='utf-8')
+                values = msgpack.unpackb(
+                    serialized, object_hook=self.decoding, encoding='utf-8')
             except Exception as e:
                 # raise everything for now
                 raise e

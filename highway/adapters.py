@@ -4,10 +4,12 @@ All adapters to tensorpack/tensorflow and all other libraries can be found here.
 from multiprocessing import Queue
 import sys
 
+
 class DequeueGenerator(object):
     """
     Tensorpack RNGDataFlow Adapter
     """
+
     def __init__(self, pipeline):
         self.pipeline = pipeline
 

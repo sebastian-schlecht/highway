@@ -4,6 +4,7 @@ from scipy.misc import imresize
 
 from ..transforms.img import *
 
+
 class Augmentation(object):
     """
     Apply a certain augmentation onto a set of data tensors.
@@ -13,6 +14,7 @@ class Augmentation(object):
     def apply(self, values, deterministic=False):
         return
 
+
 class FlipX(Augmentation):
     """
     Flig image along x axis
@@ -20,7 +22,7 @@ class FlipX(Augmentation):
 
     def apply(self, values, deterministic=False):
         if deterministic:
-            #todo
+            # todo
             return values
         else:
             images = values['images']
@@ -125,7 +127,8 @@ class Rotate(Augmentation):
         for idx in range(images.shape[0]):
             image = images[idx]
             rot_angle = np.random.randint(-self.angle, self.angle)
-            new_image = rotate(image, rot_angle, order=self.order, reshape=self.reshape)
+            new_image = rotate(
+                image, rot_angle, order=self.order, reshape=self.reshape)
             images[idx] = new_image
         return values
 
@@ -163,6 +166,7 @@ class HistEq(Augmentation):
 
 
 class Slicer(Augmentation):
+
     def __init__(self, height=0.33, width=1.0, yoffset=0., xoffset=0):
         if height > 1. or width > 1.:
             raise ValueError("Edge length must be float between 0 and 1.")
@@ -185,29 +189,36 @@ class Slicer(Augmentation):
         xoffset_height = int(self.xoffset * image_width)
 
         if image_height - 2 * yoffset_height < window_height:
-            raise ValueError("Cannot fit slicing window with current yoffset specified. Lower offset value.")
+            raise ValueError(
+                "Cannot fit slicing window with current yoffset specified. Lower offset value.")
 
         if image_width - 2 * xoffset_height < window_width:
-            raise ValueError("Cannot fit slicing window with current xoffset specified. Lower offset value.")
+            raise ValueError(
+                "Cannot fit slicing window with current xoffset specified. Lower offset value.")
 
         slices = []
         for idx in range(images.shape[0]):
             if deterministic:
-                ystart = int((image_height - 2 * yoffset_height) // 2 + yoffset_height)
-                xstart = int((image_width - 2 * xoffset_height) // 2 + xoffset_height)
+                ystart = int((image_height - 2 * yoffset_height) //
+                             2 + yoffset_height)
+                xstart = int((image_width - 2 * xoffset_height) //
+                             2 + xoffset_height)
             else:
                 if image_height == window_height:
                     h = 0
                 else:
-                    h = np.random.randint(image_height - 2 * yoffset_height - window_height)
+                    h = np.random.randint(
+                        image_height - 2 * yoffset_height - window_height)
                 ystart = int(h + yoffset_height)
 
                 if image_width == window_width:
                     w = 0
                 else:
-                    w = np.random.randint(image_width - 2 * xoffset_height - window_width)
+                    w = np.random.randint(
+                        image_width - 2 * xoffset_height - window_width)
                 xstart = int(w + xoffset_height)
-            slice = images[idx, ystart:ystart + int(window_height), xstart:xstart + int(window_width)]
+            slice = images[idx, ystart:ystart +
+                           int(window_height), xstart:xstart + int(window_width)]
             slices.append(slice[np.newaxis])
         slices = np.concatenate(slices)
         values['images'] = slices
@@ -215,6 +226,7 @@ class Slicer(Augmentation):
 
 
 class RescaleImages(Augmentation):
+
     def __init__(self, scale=1. / 128., offset=128.):
         self.scale = scale
         self.offset = offset
@@ -225,10 +237,12 @@ class RescaleImages(Augmentation):
         values['images'] = images
         return values
 
+
 class TopCenterCrop(Augmentation):
     """
     Crop images at the top center
     """
+
     def __init__(self, crop_shape):
         self.crop_shape = crop_shape
 
@@ -240,13 +254,16 @@ class TopCenterCrop(Augmentation):
             orig_shape = img.shape
             h0 = 0
             w0 = int((orig_shape[1] - self.crop_shape[1]) * 0.5)
-            images[idx] = img[h0:h0 + self.crop_shape[0], w0:w0 + self.crop_shape[1]]
+            images[idx] = img[h0:h0 + self.crop_shape[0],
+                              w0:w0 + self.crop_shape[1]]
         return values
+
 
 class ResizeWidthKeepRatio(Augmentation):
     """
     Resize the width of the image and maintain the aspect ratio for later cropping.
     """
+
     def __init__(self, size):
         self.size = size
 
@@ -264,10 +281,12 @@ class ResizeWidthKeepRatio(Augmentation):
 
         return values
 
+
 class Resize(Augmentation):
     """
     Resize the image (input = tuple)
     """
+
     def __init__(self, shape):
         self.shape = shape
 

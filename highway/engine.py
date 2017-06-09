@@ -43,6 +43,7 @@ class Node(object):
 
 
 class Pipeline(object):
+
     def __init__(self, nodes):
         self.nodes = nodes
         for idx in range(1, len(nodes)):
@@ -54,5 +55,6 @@ class Pipeline(object):
     def dequeue(self, block=True):
         value = self.nodes[-1].dequeue(block)
         if value is None:
-            raise TypeError("None type returned by pipeline. Are your nodes running?")
+            raise TypeError(
+                "None type returned by pipeline. Are your nodes running?")
         return value

@@ -1,9 +1,12 @@
-import os, sys, time
+import os
+import sys
+import time
 from .engine import Node
 from .modules.base import StreamWriter
 
 import pickle
 from scipy.misc import imsave
+
 
 class JpgDumper(StreamWriter):
     """
@@ -11,6 +14,7 @@ class JpgDumper(StreamWriter):
     All images are overriden once a new batch arrives.
     This is meant as a debug tool in order to supervise augmentations and check the image stream.
     """
+
     def __init__(self, out_dir, enqueue=False, batch_naming=True):
         self.out_dir = out_dir
         self.batch_naming = batch_naming
@@ -22,6 +26,7 @@ class JpgDumper(StreamWriter):
         for item in batch:
             imsave(self.out_dir + "/" + str(ct) + ".jpg", item)
             ct += 1
+
 
 class Benchmark(Node):
     """
