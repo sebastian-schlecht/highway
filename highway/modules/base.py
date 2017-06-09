@@ -1,7 +1,10 @@
 import abc
-from multiprocessing import Queue
-
 from ..engine import Node
+
+try:
+    import Queue
+except:
+    import queue as Queue
 
 
 class StreamWriter(Node):

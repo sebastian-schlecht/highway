@@ -1,7 +1,10 @@
-import Queue
 import numpy as np
-
 from ..engine import Node
+
+try:
+    import Queue
+except:
+    import queue as Queue
 
 
 class Noise(Node):

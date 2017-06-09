@@ -1,9 +1,12 @@
 import msgpack
 import msgpack_numpy as npack
 import zmq
-import Queue
-
 from ..engine import Node
+
+try:
+    import Queue
+except:
+    import queue as Queue
 
 
 class ZMQSink(Node):

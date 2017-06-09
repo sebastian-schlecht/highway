@@ -1,8 +1,9 @@
-"""
-All adapters to tensorpack/tensorflow and all other libraries can be found here.
-"""
-from multiprocessing import Queue
 import sys
+
+try:
+    import Queue
+except:
+    import queue as Queue
 
 
 class DequeueGenerator(object):
@@ -22,9 +23,6 @@ class DequeueGenerator(object):
                 continue
 
             for data in values[0]:
-                # print ( "asdasdasd##############", len(values), len(values[0]), len(values[1]) )
-                # sys.stdout.flush()
-                # im = data[:, :, ::-1]
                 yield [data]
 
     def size(self):
