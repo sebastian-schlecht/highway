@@ -4,7 +4,7 @@ from scipy.misc import imsave
 
 from .base import StreamWriter
 from ..engine import Node
-from ..utils import get_directory_filenames, load_image, get_class_file_map
+from ..utils import get_directory_filenames, load_image, get_class_file_map, FIFOCache
 from ..constants import IMAGE_FILETYPES
 
 
@@ -15,11 +15,12 @@ class ClfImgReader(Node):
     TODO: Deterministic read in, add keys before the imgs are put on the queue for later (debug) identification
     """
 
-    def __init__(self, data_dir, batch_size, shape, file_map=None):
+    def __init__(self, data_dir, batch_size, shape, file_map=None, cache_size=10000):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.shape = shape
         self.file_map = file_map
+        self.cache = FIFOCache(cache_size)
 
         super(ClfImgReader, self).__init__()
 
@@ -31,6 +32,7 @@ class ClfImgReader(Node):
         while True:
             labels = []
             images = []
+            keys = []
             for idx in range(self.batch_size):
                 cls_index = np.random.randint(self.n_classes)
                 one_hot = np.zeros((1, self.n_classes), dtype=np.float32)
@@ -41,15 +43,22 @@ class ClfImgReader(Node):
                 filename = self.data_dir + "/" + \
                     files[np.random.randint(len(files))]
 
-                image = load_and_fit_image(filename, self.shape)[np.newaxis]
+                image = self.cache.get(filename)
+                if not image:
+                    image = load_and_fit_image(
+                        filename, self.shape)[np.newaxis]
+                    self.cache.set(filename, image)
 
                 labels.append(one_hot)
                 images.append(image)
+                keys.append(filename)
 
             images = np.concatenate(images)
             labels = np.concatenate(labels)
-            self.queue.put({'images': images.astype(np.float32),
-                            'labels': labels.astype(np.float32)}, block=True)
+            keys = np.array(keys)
+            self.queue.put({'images': images,
+                            'labels': labels,
+                            'keys': keys}, block=True)
 
 
 class ImgReader(Node):
@@ -58,12 +67,12 @@ class ImgReader(Node):
     The batch size defines how many images are put into the queue in one slot.
     """
 
-    def __init__(self, data_dir, batch_size=32, random=True, once=False):
+    def __init__(self, data_dir, batch_size=32, random=True, once=False, cache_size=10000):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.random = random
         self.once = once
-
+        self.cache = FIFOCache(cache_size)
         super(ImgReader, self).__init__()
 
     def run(self):
@@ -85,8 +94,10 @@ class ImgReader(Node):
 
                     idx = gc
                     gc += 1
-
-                img = load_image(self.data_dir + "/" + filenames[idx])
+                img = self.cache.get(idx)
+                if not img:
+                    img = load_image(self.data_dir + "/" + filenames[idx])
+                    self.cache.set(idx, img)
 
                 payload.append(img)
                 indexes.append(idx)
@@ -94,7 +105,7 @@ class ImgReader(Node):
             self.queue.put({'images': payload, 'keys': indexes}, block=True)
 
 
-class JpgSaver(StreamWriter):
+class ImageSaver(StreamWriter):
     """
     Saves all images in a batch to a directory named by the given keys.
     """
@@ -102,7 +113,7 @@ class JpgSaver(StreamWriter):
     def __init__(self, out_dir, file_type=".jpg"):
         self.out_dir = out_dir
         self.file_type = file_type
-        super(JpgSaver, self).__init__(False)
+        super(ImageSaver, self).__init__(False)
 
     def dump_func(self, stream):
         batch = stream['images']

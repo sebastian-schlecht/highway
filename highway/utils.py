@@ -3,6 +3,7 @@ from scipy.ndimage.interpolation import zoom
 import numpy as np
 import os
 import sys
+from collections import OrderedDict
 
 
 def get_ext(filename):
@@ -56,3 +57,39 @@ def get_class_file_map(data_dir, extensions=False):
             data_dir + "/" + cls) if not extensions or (extensions and get_ext(f) in extensions)]
 
     return file_map, n_classes, classes
+
+
+class LimitedSizeDict(OrderedDict):
+
+    def __init__(self, *args, **kwds):
+        self.size_limit = kwds.pop("size_limit", None)
+        OrderedDict.__init__(self, *args, **kwds)
+        self._check_size_limit()
+
+    def __setitem__(self, key, value):
+        OrderedDict.__setitem__(self, key, value)
+        self._check_size_limit()
+
+    def _check_size_limit(self):
+        if self.size_limit is not None:
+            while len(self) > self.size_limit:
+                self.popitem(last=False)
+
+
+class FIFOCache(object):
+    """
+    Pretty stupid cache that pops the first item once full. No strategy here as
+    we usually don't want biased statistics anyway.
+    """
+    def __init__(self, size_limit=10000):
+        self.size_limit = size_limit
+        self.store = LimitedSizeDict(size_limit=size_limit)
+
+    def get(self, key):
+        if key not in self.store:
+            return None
+        else:
+            return self.store[key]
+
+    def set(self, key, value):
+        self.store[key] = value
