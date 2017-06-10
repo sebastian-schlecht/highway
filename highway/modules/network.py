@@ -70,4 +70,4 @@ class ZMQSource(Node):
                 # raise everything for now
                 raise e
             if values is not None:
-                self.queue.put(values, block=True)
+                self.enqueue(values, block=True)

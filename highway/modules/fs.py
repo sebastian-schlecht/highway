@@ -56,7 +56,7 @@ class ClfImgReader(Node):
             images = np.concatenate(images)
             labels = np.concatenate(labels)
             keys = np.array(keys)
-            self.queue.put({'images': images,
+            self.enqueue({'images': images,
                             'labels': labels,
                             'keys': keys}, block=True)
 
@@ -102,10 +102,10 @@ class ImgReader(Node):
                 payload.append(img)
                 indexes.append(idx)
 
-            self.queue.put({'images': payload, 'keys': indexes}, block=True)
+            self.enqueue({'images': payload, 'keys': indexes}, block=True)
 
 
-class ImageSaver(StreamWriter):
+class ImgSaver(StreamWriter):
     """
     Saves all images in a batch to a directory named by the given keys.
     """
@@ -113,7 +113,7 @@ class ImageSaver(StreamWriter):
     def __init__(self, out_dir, file_type=".jpg"):
         self.out_dir = out_dir
         self.file_type = file_type
-        super(ImageSaver, self).__init__(False)
+        super(ImgSaver, self).__init__(False)
 
     def dump_func(self, stream):
         batch = stream['images']
