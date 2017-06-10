@@ -67,7 +67,7 @@ class ImgReader(Node):
     The batch size defines how many images are put into the queue in one slot.
     """
 
-    def __init__(self, data_dir, batch_size=32, random=True, once=False, cache_size=10000):
+    def __init__(self, data_dir, batch_size=32, random=True, once=False, cache_size=100):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.random = random
@@ -95,7 +95,7 @@ class ImgReader(Node):
                     idx = gc
                     gc += 1
                 img = self.cache.get(idx)
-                if not img:
+                if img is None:
                     img = load_image(self.data_dir + "/" + filenames[idx])
                     self.cache.set(idx, img)
 

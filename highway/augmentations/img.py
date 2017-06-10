@@ -238,7 +238,11 @@ class TopCenterCrop(Augmentation):
         self.crop_shape = crop_shape
 
     def apply(self, values, deterministic=True):
-        # todo random top center cropping
+
+        if deterministic == False:
+            # todo random top center cropping
+            raise NotImplementedError("Random resizing not yet implemented.")
+        
         images = values['images']
         for idx in range(len(images)):
             img = images[idx]
