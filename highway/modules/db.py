@@ -16,7 +16,7 @@ class LevelDBSource(Node):
         self.db = plyvel.DB(self.filename, create_if_missing=False)
         super(LevelDBSource, self).__init__()
 
-    def run():
+    def run(self):
         while True and self.db:
             samples = 0
             result_dict = {}
@@ -47,7 +47,7 @@ class LevelDBSink(Node):
         self.global_idx = 0
         super(LevelDBSink, self).__init__()
 
-    def run():
+    def run(self):
         while True and self.db:
             try:
                 data = self.input.dequeue()
@@ -55,10 +55,10 @@ class LevelDBSink(Node):
                 continue
 
             # get data list length
-            n_samples = len(data.items()[0][0])
-            for idx in n_samples:
+            n_samples = len(data.items()[0][1])
+            for idx in range(n_samples):
                 sample = {}
                 for key in data:
                     sample[key] = data[key][idx]
                 serialized = msgpack.packb(sample, default=self.encoding, use_bin_type=True)
-                self.db.put(bytes(self.global_idx), )
+                self.db.put(bytes(self.global_idx), serialized)
