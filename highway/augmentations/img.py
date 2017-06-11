@@ -242,7 +242,7 @@ class TopCenterCrop(Augmentation):
         if deterministic == False:
             # todo random top center cropping
             raise NotImplementedError("Random resizing not yet implemented.")
-        
+
         images = values['images']
         for idx in range(len(images)):
             img = images[idx]
@@ -257,7 +257,6 @@ class TopCenterCrop(Augmentation):
 class Resize(Augmentation):
     """
     Resize images with different modes.
-    Possible interpolations: ‘nearest’, ‘lanczos’, ‘bilinear’, ‘bicubic’ or ‘cubic’
     """
 
     def __init__(self, shape, mode='resize',interp='bicubic'):
@@ -274,7 +273,7 @@ class Resize(Augmentation):
             if deterministic:
                 if self.mode == 'resize':
                     images[idx] = imresize(img, self.shape, interp=self.interp)
-                elif self.mode == 'width': 
+                elif self.mode == 'width':
                     w, h = img.shape[:2]
                     scale = self.shape / h
                     desSize = map(int, [scale * w, scale * h])

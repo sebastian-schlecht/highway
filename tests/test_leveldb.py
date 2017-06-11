@@ -29,13 +29,14 @@ class TestLevelDB:
         image_shape = (320, 240, 3)
         p_a = Pipeline([Noise(data_shape=image_shape, n_tensors=10, force_constant=True), LevelDBSink(filename=db_name)])
         # Wait until all threads spin up
-        time.sleep(0.5)
+        time.sleep(4)
         assert os.path.exists(db_name)
+        # Stop pipeline a
+        p_a.close()
+        # Wait a sec until all workers shut down
+        time.sleep(4)
 
-        # todo This does not work as pipeline shutdown is currently not implemented
-        """
-        p_b = Pipeline([LevelDBSource(filename=db_name)])
-        for batch in p_b.dequeue():
-            images = batch["images"]
-            assert images.shape == (10, 320, 240, 3)
-        """
+        p_b = Pipeline([LevelDBSource(filename=db_name, batch_size=2)])
+        batch = p_b.dequeue()
+        images = batch["images"]
+        assert images.shape == (2, 320, 240, 3)

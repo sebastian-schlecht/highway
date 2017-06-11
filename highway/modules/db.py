@@ -1,6 +1,7 @@
 import plyvel
 from ..engine import Node
 import msgpack
+import numpy as np
 import msgpack_numpy as npack
 
 try:
@@ -14,29 +15,32 @@ class LevelDBSource(Node):
         self.batch_size = batch_size
         self.decoding = decoding
         self.db = plyvel.DB(self.filename, create_if_missing=False)
-        super(LevelDBSource, self).__init__()
+        super(LevelDBSource, self).__init__(n_worker=1)
 
-    def run(self):
-        while True and self.db:
-            samples = 0
-            result_dict = {}
-            for _, sample in self.db:
-                sample = msgpack.unpackb(sample, object_hook=self.decoding, encoding='utf-8')
-                for key in sample:
-                    if key not in result_dict:
-                        result_dict[key] = []
-                    else:
-                        result_dict[key].append(sample[key][np.newaxis])
-                samples += 1
+    def loop(self):
+        samples = 0
+        result_dict = {}
+        for _, sample in self.db:
+            sample = msgpack.unpackb(sample, object_hook=self.decoding)
 
-                if samples == self.batch_size:
-                    # Concat
-                    for key in result_dict:
-                        result_dict[key] = np.concatenate(result_dict[key])
-                    # Send
-                    self.enqueue(result_dict)
-                    samples = 0
-                    result_dict = {}
+            for key in sample:
+                if key not in result_dict:
+                    result_dict[key] = []
+                    result_dict[key].append(sample[key][np.newaxis])
+                else:
+                    result_dict[key].append(sample[key][np.newaxis])
+            samples += 1
+
+            if samples == self.batch_size:
+                # Concat
+                for key in result_dict:
+                    result_dict[key] = np.concatenate(result_dict[key])
+                # Send
+                self.enqueue(result_dict)
+                samples = 0
+                result_dict = {}
+    def close(self):
+        self.db.close()
 
 
 class LevelDBSink(Node):
@@ -45,20 +49,19 @@ class LevelDBSink(Node):
         self.encoding = encoding
         self.db = plyvel.DB(self.filename, create_if_missing=True)
         self.global_idx = 0
-        super(LevelDBSink, self).__init__()
+        super(LevelDBSink, self).__init__(n_worker=1)
 
-    def run(self):
-        while True and self.db:
-            try:
-                data = self.input.dequeue()
-            except Queue.Empty:
-                continue
+    def loop(self):
+        data = self.input.dequeue()
+        # get data list length
+        n_samples = len(data.items()[0][1])
+        for idx in range(n_samples):
+            sample = {}
+            for key in data:
+                sample[key] = data[key][idx]
+            serialized = msgpack.packb(sample, default=self.encoding)
+            self.db.put(bytes(self.global_idx), serialized)
+            self.global_idx += 1
 
-            # get data list length
-            n_samples = len(data.items()[0][1])
-            for idx in range(n_samples):
-                sample = {}
-                for key in data:
-                    sample[key] = data[key][idx]
-                serialized = msgpack.packb(sample, default=self.encoding, use_bin_type=True)
-                self.db.put(bytes(self.global_idx), serialized)
+    def close(self):
+        self.db.close()
