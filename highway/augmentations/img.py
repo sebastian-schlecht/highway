@@ -2,17 +2,8 @@ import abc
 
 from scipy.misc import imresize
 
+from .base import Augmentation
 from ..transforms.img import *
-
-
-class Augmentation(object):
-    """
-    Apply a certain augmentation onto a set of data tensors.
-    """
-
-    @abc.abstractmethod
-    def apply(self, values, deterministic=False):
-        return
 
 
 class FlipX(Augmentation):
@@ -247,7 +238,11 @@ class TopCenterCrop(Augmentation):
         self.crop_shape = crop_shape
 
     def apply(self, values, deterministic=True):
-        # todo random top center cropping
+
+        if deterministic == False:
+            # todo random top center cropping
+            raise NotImplementedError("Random resizing not yet implemented.")
+        
         images = values['images']
         for idx in range(len(images)):
             img = images[idx]
@@ -259,43 +254,37 @@ class TopCenterCrop(Augmentation):
         return values
 
 
-class ResizeWidthKeepRatio(Augmentation):
+class Resize(Augmentation):
     """
-    Resize the width of the image and maintain the aspect ratio for later cropping.
+    Resize images with different modes.
+    Possible interpolations: ‘nearest’, ‘lanczos’, ‘bilinear’, ‘bicubic’ or ‘cubic’
     """
 
-    def __init__(self, size):
-        self.size = size
+    def __init__(self, shape, mode='resize',interp='bicubic'):
+        self.shape = shape
+        self.interp = interp
+        self.mode = mode
 
     def apply(self, values, deterministic=True):
         # todo random resizing
         images = values['images']
         for idx in range(len(images)):
             img = images[idx]
-            w, h = img.shape[:2]
-            scale = self.size / h
-            desSize = map(int, [scale * w, scale * h])
-            images[idx] = imresize(img, tuple(desSize), interp='nearest')
-            if images[idx].ndim == 3 and images[idx].ndim == 2:
-                images[idx] = images[idx][:, :, np.newaxis]
 
-        return values
+            if deterministic:
+                if self.mode == 'resize':
+                    images[idx] = imresize(img, self.shape, interp=self.interp)
+                elif self.mode == 'width': 
+                    w, h = img.shape[:2]
+                    scale = self.shape / h
+                    desSize = map(int, [scale * w, scale * h])
+                    images[idx] = imresize(img, tuple(desSize), interp=self.interp)
+                else:
+                    raise Exception("Resize Augmentation failed. Resize mode not known.")
 
-
-class Resize(Augmentation):
-    """
-    Resize the image (input = tuple)
-    """
-
-    def __init__(self, shape):
-        self.shape = shape
-
-    def apply(self, values, deterministic=True):
-        # todo random resizing
-        images = values['images']
-        for idx in range(len(images)):
-            images[idx] = imresize(images[idx], self.shape, interp='nearest')
-            if images[idx].ndim == 3 and images[idx].ndim == 2:
-                images[idx] = images[idx][:, :, np.newaxis]
+                if images[idx].ndim == 3 and images[idx].ndim == 2:
+                    images[idx] = images[idx][:, :, np.newaxis]
+            else:
+                raise NotImplementedError("Random resizing not yet implemented.")
 
         return values

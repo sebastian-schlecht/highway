@@ -56,7 +56,7 @@ class ClfImgReader(Node):
             images = np.concatenate(images)
             labels = np.concatenate(labels)
             keys = np.array(keys)
-            self.queue.put({'images': images,
+            self.enqueue({'images': images,
                             'labels': labels,
                             'keys': keys}, block=True)
 
@@ -67,7 +67,7 @@ class ImgReader(Node):
     The batch size defines how many images are put into the queue in one slot.
     """
 
-    def __init__(self, data_dir, batch_size=32, random=True, once=False, cache_size=10000):
+    def __init__(self, data_dir, batch_size=32, random=True, once=False, cache_size=100):
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.random = random
@@ -95,17 +95,17 @@ class ImgReader(Node):
                     idx = gc
                     gc += 1
                 img = self.cache.get(idx)
-                if not img:
+                if img is None:
                     img = load_image(self.data_dir + "/" + filenames[idx])
                     self.cache.set(idx, img)
 
                 payload.append(img)
                 indexes.append(idx)
 
-            self.queue.put({'images': payload, 'keys': indexes}, block=True)
+            self.enqueue({'images': payload, 'keys': indexes}, block=True)
 
 
-class ImageSaver(StreamWriter):
+class ImgSaver(StreamWriter):
     """
     Saves all images in a batch to a directory named by the given keys.
     """
@@ -113,7 +113,7 @@ class ImageSaver(StreamWriter):
     def __init__(self, out_dir, file_type=".jpg"):
         self.out_dir = out_dir
         self.file_type = file_type
-        super(ImageSaver, self).__init__(False)
+        super(ImgSaver, self).__init__(False)
 
     def dump_func(self, stream):
         batch = stream['images']
