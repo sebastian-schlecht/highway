@@ -257,6 +257,7 @@ class TopCenterCrop(Augmentation):
 class Resize(Augmentation):
     """
     Resize images with different modes.
+    Possible interpolations: 'nearest', 'lanczos', 'bilinear', 'bicubic' or 'cubic'
     """
 
     def __init__(self, shape, mode='resize',interp='bicubic'):
