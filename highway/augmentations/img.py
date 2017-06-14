@@ -268,23 +268,27 @@ class Resize(Augmentation):
     def apply(self, values, deterministic=True):
         # todo random resizing
         images = values['images']
+        resized = []
         for idx in range(len(images)):
             img = images[idx]
 
-            if deterministic:
-                if self.mode == 'resize':
-                    images[idx] = imresize(img, self.shape, interp=self.interp)
-                elif self.mode == 'width':
-                    w, h = img.shape[:2]
-                    scale = float(self.shape) / float(h)
-                    desSize = map(int, [scale * w, scale * h])
-                    images[idx] = imresize(img, tuple(desSize), interp=self.interp)
-                else:
-                    raise Exception("Resize Augmentation failed. Resize mode not known.")
 
-                if images[idx].ndim == 3 and images[idx].ndim == 2:
-                    images[idx] = images[idx][:, :, np.newaxis]
+            if self.mode == 'resize':
+                new_image = imresize(img, self.shape, interp=self.interp)
+            elif self.mode == 'width':
+                w, h = img.shape[:2]
+                scale = float(self.shape) / float(h)
+                desSize = map(int, [scale * w, scale * h])
+                new_image = imresize(img.squeeze(), tuple(desSize), interp=self.interp)
             else:
-                raise NotImplementedError("Random resizing not yet implemented.")
+                raise Exception("Resize Augmentation failed. Resize mode not known.")
 
+            if new_image.ndim == 2:
+                new_image = new_image[:, :, np.newaxis]
+
+            # Add batch dim
+            new_image = new_image[np.newaxis]
+            resized.append(new_image)
+
+        values["images"] = np.concatenate(resized)
         return values

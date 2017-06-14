@@ -5,15 +5,15 @@ sys.path.append("..")
 
 from highway.engine import Pipeline
 
-from highway.modules import Augmentations
-from highway.modules import Noise, ZMQSink, ZMQSource
+from highway.modules.processing import Noise, Augmentations
+from highway.modules.network import ZMQSink, ZMQSource
 
-from highway.augmentations import Resize
+from highway.augmentations.img import Resize
 
-N = 50
-data_shape = (32, 320, 240, 3)
+N = 20
+data_shape = (320, 240, 3)
 
-source = Pipeline([Noise(data_shape=data_shape, n_tensors=3, n_worker=2, force_constant=True), Augmentations([Resize((255, 255))])])
+source = Pipeline([Noise(data_shape=data_shape, n_tensors=32, n_worker=2, force_constant=True), Augmentations([Resize((255, 255), mode="resize", interp="nearest")])])
 
 print "Running benchmark..."
 
@@ -22,12 +22,11 @@ n_iters = 0
 s = time.time()
 for _ in range(N):
     data = source.dequeue()
-    for tensor in data:
-        n_bytes += tensor.nbytes
+    for key in data:
+        n_bytes += data[key].nbytes
 
-    images = data[0]
+    images = data["images"]
     assert images.shape == (32, 255, 255, 3)
-
     n_iters += 1
 
 e = time.time()

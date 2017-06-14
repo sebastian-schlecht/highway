@@ -11,6 +11,7 @@ class TestEngine:
         data = p.dequeue()
         assert len(data) == 1
         assert data["images"].shape == (1, 1, 2)
+        p.stop()
 
     def test_two_nodes(self):
         p = Pipeline([Noise(data_shape=(3, 5), n_tensors=2), Augmentations()])
@@ -18,3 +19,4 @@ class TestEngine:
         data = p.dequeue()
         assert len(data["images"]) == 2
         assert data["images"].shape == (2, 3, 5)
+        p.stop()

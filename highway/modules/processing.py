@@ -35,14 +35,14 @@ class Augmentations(Node):
     Node that applies a certain set of transforms in sequence.
     """
 
-    def __init__(self, transforms=(), deterministic=False, n_worker=4, queue_size=10):
+    def __init__(self, transforms=(), deterministic=False, n_worker=4, queue_size=128):
         self.transforms = transforms
         self.deterministic = deterministic
 
         super(Augmentations, self).__init__(
             n_worker=n_worker, queue_size=queue_size)
 
-    def run(self):
+    def loop(self):
         values = self.input.dequeue()
         if len(self.transforms) > 0:
             for transform in self.transforms:

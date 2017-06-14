@@ -40,3 +40,5 @@ class TestLevelDB:
         batch = p_b.dequeue()
         images = batch["images"]
         assert images.shape == (2, 320, 240, 3)
+
+        p_b.stop()

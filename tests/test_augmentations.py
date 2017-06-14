@@ -36,4 +36,3 @@ class TestAugmentations:
         r = TopCenterCrop((20, 20)).apply({"images": [arr]})
         for image in r['images']:
             assert image.shape == (20, 20)
-        
