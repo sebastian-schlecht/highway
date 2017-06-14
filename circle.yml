@@ -1,0 +1,12 @@
+machine:
+  python:
+    version: 3.6.1
+
+test:
+  override:
+    - pytest
+
+dependencies:
+  pre:
+    - sudo apt-get install libleveldb-dev libzmq3-dev
+    - pip install pytest numpy Pillow scipy pyzmq msgpack-python msgpack_numpy plyvel

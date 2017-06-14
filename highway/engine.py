@@ -1,7 +1,10 @@
 import multiprocessing
 import numpy as np
 
-import Queue
+try:
+    import Queue
+except:
+    import queue as Queue
 
 import logging
 
