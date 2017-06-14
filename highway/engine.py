@@ -32,7 +32,7 @@ class Node(object):
     def attach(self, node):
         self.input = node
 
-    def close(self):
+    def stop_processes(self):
         self.stop.set()
 
     def dequeue(self, block=True, timeout=DEFAULT_TIMEOUT):
@@ -99,6 +99,6 @@ class Pipeline(object):
                 "None type returned by pipeline. Are your nodes running?")
         return value
 
-    def close(self):
+    def stop(self):
         for node in self.nodes:
-            node.close()
+            node.stop_processes()

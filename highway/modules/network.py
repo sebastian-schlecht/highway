@@ -35,6 +35,9 @@ class ZMQSink(Node):
                 values, default=self.encoding, use_bin_type=True)
             result = self.socket.send(serialized, flags=self.flags)
 
+    def close(self):
+        self.socket.close()
+
 
 class ZMQSource(Node):
 
@@ -62,3 +65,6 @@ class ZMQSource(Node):
             serialized, object_hook=self.decoding, encoding='utf-8')
         if values is not None:
             self.enqueue(values)
+
+    def close(self):
+        self.socket.close()

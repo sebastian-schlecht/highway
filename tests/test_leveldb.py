@@ -29,12 +29,12 @@ class TestLevelDB:
         image_shape = (320, 240, 3)
         p_a = Pipeline([Noise(data_shape=image_shape, n_tensors=10, force_constant=True), LevelDBSink(filename=db_name)])
         # Wait until all threads spin up
-        time.sleep(1)
+        time.sleep(.5)
         assert os.path.exists(db_name)
         # Stop pipeline a
-        p_a.close()
+        p_a.stop()
         # Wait a sec until all workers shut down
-        time.sleep(1)
+        time.sleep(.5)
 
         p_b = Pipeline([LevelDBSource(filename=db_name, batch_size=2)])
         batch = p_b.dequeue()

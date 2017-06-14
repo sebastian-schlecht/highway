@@ -14,8 +14,11 @@ class LevelDBSource(Node):
         self.filename = filename
         self.batch_size = batch_size
         self.decoding = decoding
-        self.db = plyvel.DB(self.filename, create_if_missing=False)
+
         super(LevelDBSource, self).__init__(n_worker=1)
+
+    def setup(self):
+        self.db = plyvel.DB(self.filename, create_if_missing=False)
 
     def loop(self):
         samples = 0
@@ -40,6 +43,7 @@ class LevelDBSource(Node):
                 samples = 0
                 result_dict = {}
     def close(self):
+        print "calling close"
         self.db.close()
 
 
@@ -47,9 +51,11 @@ class LevelDBSink(Node):
     def __init__(self, filename, encoding=npack.encode):
         self.filename = filename
         self.encoding = encoding
-        self.db = plyvel.DB(self.filename, create_if_missing=True)
         self.global_idx = 0
         super(LevelDBSink, self).__init__(n_worker=1)
+
+    def setup(self):
+        self.db = plyvel.DB(self.filename, create_if_missing=True)
 
     def loop(self):
         data = self.input.dequeue()
@@ -64,4 +70,5 @@ class LevelDBSink(Node):
             self.global_idx += 1
 
     def close(self):
+        print "calling close"
         self.db.close()
