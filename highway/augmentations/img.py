@@ -283,9 +283,6 @@ class Resize(Augmentation):
             else:
                 raise Exception("Resize Augmentation failed. Resize mode not known.")
 
-            if new_image.ndim == 2:
-                new_image = new_image[:, :, np.newaxis]
-
             # Add batch dim
             new_image = new_image[np.newaxis]
             resized.append(new_image)
