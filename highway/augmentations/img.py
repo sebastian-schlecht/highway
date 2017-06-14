@@ -276,7 +276,7 @@ class Resize(Augmentation):
                     images[idx] = imresize(img, self.shape, interp=self.interp)
                 elif self.mode == 'width':
                     w, h = img.shape[:2]
-                    scale = self.shape / h
+                    scale = float(self.shape) / float(h)
                     desSize = map(int, [scale * w, scale * h])
                     images[idx] = imresize(img, tuple(desSize), interp=self.interp)
                 else:
