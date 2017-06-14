@@ -18,27 +18,22 @@ class ZMQSink(Node):
         self.flags = flags
         super(ZMQSink, self).__init__(n_worker=1)
 
-    def run(self):
-        ctx = zmq.Context()
-        socket = ctx.socket(zmq.PUSH)
+    def setup(self):
+        self.ctx = zmq.Context()
+        self.socket = self.ctx.socket(zmq.PUSH)
 
         if self.bind:
-            socket.bind(self.target)
+            self.socket.bind(self.target)
         else:
-            socket.connect(self.target)
+            self.socket.connect(self.target)
 
-        while True and self.input:
-            try:
-                values = self.input.queue.get(
-                    block=True, timeout=Node.DEFAULT_TIMEOUT)
-            except Queue.Empty:
-                continue
-
-            if values is not None:
-                # Send values ZMQ
-                serialized = msgpack.packb(
-                    values, default=self.encoding, use_bin_type=True)
-                result = socket.send(serialized, flags=self.flags)
+    def loop(self):
+        values = self.input.dequeue()
+        if values is not None:
+            # Send values ZMQ
+            serialized = msgpack.packb(
+                values, default=self.encoding, use_bin_type=True)
+            result = self.socket.send(serialized, flags=self.flags)
 
 
 class ZMQSource(Node):
@@ -52,22 +47,18 @@ class ZMQSource(Node):
         self.track = track
         super(ZMQSource, self).__init__(n_worker=1)
 
-    def run(self):
-        ctx = zmq.Context()
-        socket = ctx.socket(zmq.PULL)
+    def setup(self):
+        self.ctx = zmq.Context()
+        self.socket = self.ctx.socket(zmq.PULL)
         if self.bind:
-            socket.bind(self.source)
+            self.socket.bind(self.source)
         else:
-            socket.connect(self.source)
+            self.socket.connect(self.source)
 
-        while True:
-            try:
-                serialized = socket.recv(
-                    flags=self.flags, copy=self.copy, track=self.track)
-                values = msgpack.unpackb(
-                    serialized, object_hook=self.decoding, encoding='utf-8')
-            except Exception as e:
-                # raise everything for now
-                raise e
-            if values is not None:
-                self.enqueue(values, block=True)
+    def loop(self):
+        serialized = self.socket.recv(
+            flags=self.flags, copy=self.copy, track=self.track)
+        values = msgpack.unpackb(
+            serialized, object_hook=self.decoding, encoding='utf-8')
+        if values is not None:
+            self.enqueue(values)

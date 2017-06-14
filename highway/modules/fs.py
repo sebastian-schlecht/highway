@@ -20,45 +20,45 @@ class ClfImgReader(Node):
         self.batch_size = batch_size
         self.shape = shape
         self.file_map = file_map
-        self.cache = FIFOCache(cache_size)
 
-        super(ClfImgReader, self).__init__()
-
-    def run(self):
         if not self.file_map:
             self.file_map, self.n_classes, self.classes = get_class_file_map(
                 self.data_dir)
 
-        while True:
-            labels = []
-            images = []
-            keys = []
-            for idx in range(self.batch_size):
-                cls_index = np.random.randint(self.n_classes)
-                one_hot = np.zeros((1, self.n_classes), dtype=np.float32)
-                one_hot[0, cls_index] = 1.
+        self.cache = FIFOCache(cache_size)
 
-                # Load a random sample from that class
-                files = self.file_map[self.classes[cls_index]]
-                filename = self.data_dir + "/" + \
-                    files[np.random.randint(len(files))]
+        super(ClfImgReader, self).__init__()
 
-                image = self.cache.get(filename)
-                if not image:
-                    image = load_and_fit_image(
-                        filename, self.shape)[np.newaxis]
-                    self.cache.set(filename, image)
+    def loop(self):
+        labels = []
+        images = []
+        keys = []
+        for idx in range(self.batch_size):
+            cls_index = np.random.randint(self.n_classes)
+            one_hot = np.zeros((1, self.n_classes), dtype=np.float32)
+            one_hot[0, cls_index] = 1.
 
-                labels.append(one_hot)
-                images.append(image)
-                keys.append(filename)
+            # Load a random sample from that class
+            files = self.file_map[self.classes[cls_index]]
+            filename = self.data_dir + "/" + \
+                files[np.random.randint(len(files))]
 
-            images = np.concatenate(images)
-            labels = np.concatenate(labels)
-            keys = np.array(keys)
-            self.enqueue({'images': images,
-                            'labels': labels,
-                            'keys': keys}, block=True)
+            image = self.cache.get(filename)
+            if not image:
+                image = load_and_fit_image(
+                    filename, self.shape)[np.newaxis]
+                self.cache.set(filename, image)
+
+            labels.append(one_hot)
+            images.append(image)
+            keys.append(filename)
+
+        images = np.concatenate(images)
+        labels = np.concatenate(labels)
+        keys = np.array(keys)
+        self.enqueue({'images': images,
+                        'labels': labels,
+                        'keys': keys})
 
 
 class ImgReader(Node):
@@ -73,36 +73,35 @@ class ImgReader(Node):
         self.random = random
         self.once = once
         self.cache = FIFOCache(cache_size)
+        self.filenames = get_directory_filenames(self.data_dir, IMAGE_FILETYPES)
+        self.n_files = len(filenames)
+        self.gc = 0
         super(ImgReader, self).__init__()
 
-    def run(self):
-        filenames = get_directory_filenames(self.data_dir, IMAGE_FILETYPES)
-        n_files = len(filenames)
-        gc = 0
-        while True:
-            payload = []
-            indexes = []
+    def loop(self):
+        payload = []
+        indexes = []
 
-            for bct in range(self.batch_size):
-                if self.random:
-                    idx = np.random.randint(n_files)
-                else:
-                    if gc > n_files - 1:
-                        if self.once:
-                            return
-                        gc = 0
+        for bct in range(self.batch_size):
+            if self.random:
+                idx = np.random.randint(self.n_files)
+            else:
+                if self.gc > n_files - 1:
+                    if self.once:
+                        return
+                    self.gc = 0
 
-                    idx = gc
-                    gc += 1
-                img = self.cache.get(idx)
-                if img is None:
-                    img = load_image(self.data_dir + "/" + filenames[idx])
-                    self.cache.set(idx, img)
+                idx = self.gc
+                self.gc += 1
+            img = self.cache.get(idx)
+            if img is None:
+                img = load_image(self.data_dir + "/" + self.filenames[idx])
+                self.cache.set(idx, img)
 
-                payload.append(img)
-                indexes.append(idx)
+            payload.append(img)
+            indexes.append(idx)
 
-            self.enqueue({'images': payload, 'keys': indexes}, block=True)
+        self.enqueue({'images': payload, 'keys': indexes})
 
 
 class ImgSaver(StreamWriter):

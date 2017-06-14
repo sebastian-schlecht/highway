@@ -4,7 +4,8 @@ import sys
 sys.path.append("..")
 
 from highway.engine import Pipeline
-from highway.modules import Noise, ZMQSink, ZMQSource
+from highway.modules.network import ZMQSink, ZMQSource
+from highway.modules.processing import Noise
 
 N = 100
 data_shape = (320, 240, 3)
@@ -21,7 +22,8 @@ n_iters = 0
 s = time.time()
 for _ in range(N):
     data = sink.dequeue()
-    for tensor in data:
+    for key in data:
+        tensor = data[key]
         n_bytes += tensor.nbytes
     n_iters += 1
 
