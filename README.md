@@ -66,8 +66,6 @@ Benchmark scripts are located in the folder ```benchmarks```. Right now, we meas
 ## What we're planning to add
 Some features are not there yet but may come in the near future. This includes, but is not limited to:
 
-- Database interfaces to stream data from/to fast key/value stores like LevelDB or RocksDB
-- Debugging facilities
 - More augmentations and potentially a cleaner programming API for them
 - More examples
 - Support for object-detection in PASCAL VOC format.
