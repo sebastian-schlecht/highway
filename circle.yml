@@ -5,4 +5,5 @@ test:
 dependencies:
   pre:
     - sudo apt-get install libleveldb-dev libzmq3-dev
-    - pip install pytest numpy Pillow scipy pyzmq msgpack-python msgpack_numpy plyvel tox
+    - pip install pytest numpy Pillow scipy pyzmq msgpack-python msgpack_numpy plyvel tox tox-pyenv
+    - pyenv local 2.7.10 3.6.0
