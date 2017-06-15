@@ -58,7 +58,10 @@ else:
 
 ## Testing
 To run the test suite, install development dependencies ```pip install -e .test```.
-From the project root, run ```pytest```.
+From the project root, run ```tox```.
+
+Note: On macOS, levelDB might fail to compile. Run tox like this to allow compilation of levelDB binaries and replace the version number of levelDB with the one installed on your systemself.
+```LIBRARY_PATH=/usr/local/Cellar/leveldb/1.18/lib CPATH=/usr/local/Cellar/leveldb/1.18/include tox```
 
 ## Benchmarking and performance
 Benchmark scripts are located in the folder ```benchmarks```. Right now, we measured that inter-process communication roughly maxes out at 500 Mbytes/s (depending on the machine you're using). For TCP communication we measured roughly 120Mbytes/s to be the upper limit (again, depends on the machine you're using but this may provide an idea where we're heading). We're not planning to add custom queues and message services ourselves so performance may be inherently limited by the tools that are available. Right now, we use [ZMQ](http://zeromq.org/) for messaging and [msgpack](https://pypi.python.org/pypi/msgpack-python) for serialization which offer good performance but we yet have to validate whether that's enough in the future.

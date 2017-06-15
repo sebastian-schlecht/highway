@@ -59,7 +59,7 @@ class LevelDBSink(Node):
     def loop(self):
         data = self.input.dequeue()
         # get data list length
-        n_samples = len(data.items()[0][1])
+        n_samples = len(list(data.items())[0][1])
         for idx in range(n_samples):
             sample = {}
             for key in data:

@@ -38,7 +38,7 @@ class TestLevelDB:
 
         p_b = Pipeline([LevelDBSource(filename=db_name, batch_size=2)])
         batch = p_b.dequeue()
-        images = batch["images"]
+        images = batch[b"images"]
         assert images.shape == (2, 320, 240, 3)
 
         p_b.stop()
