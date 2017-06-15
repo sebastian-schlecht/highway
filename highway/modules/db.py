@@ -43,7 +43,6 @@ class LevelDBSource(Node):
                 samples = 0
                 result_dict = {}
     def close(self):
-        print "calling close"
         self.db.close()
 
 
@@ -70,5 +69,4 @@ class LevelDBSink(Node):
             self.global_idx += 1
 
     def close(self):
-        print "calling close"
         self.db.close()
