@@ -105,16 +105,17 @@ class Rotate(Augmentation):
     Rotate image along a random angle within (-angle, +angle)
     """
 
-    def __init__(self, angle, order=0, reshape=False):
+    def __init__(self, angle, order=0, reshape=False, key="images"):
         self.angle = angle
         self.order = order
         self.reshape = reshape
+        self.key = key
 
     def apply(self, values, deterministic=False):
         if deterministic:
             # todo
             return values
-        images = values['images']
+        images = values[self.key]
         for idx in range(images.shape[0]):
             image = images[idx]
             rot_angle = np.random.randint(-self.angle, self.angle)
@@ -260,21 +261,21 @@ class Resize(Augmentation):
     Possible interpolations: 'nearest', 'lanczos', 'bilinear', 'bicubic' or 'cubic'
     """
 
-    def __init__(self, shape, mode='resize',interp='bicubic'):
+    def __init__(self, shape, mode='resize',interp='bicubic', key="images"):
         self.shape = shape
         self.interp = interp
         self.mode = mode
+        self.key = key
 
     def apply(self, values, deterministic=True):
         # todo random resizing
-        images = values['images']
+        images = values[self.key]
         resized = []
         for idx in range(len(images)):
             img = images[idx]
 
-
             if self.mode == 'resize':
-                new_image = imresize(img, self.shape, interp=self.interp)
+                new_image = imresize(img.squeeze(), self.shape, interp=self.interp)
             elif self.mode == 'width':
                 w, h = img.shape[:2]
                 scale = float(self.shape) / float(h)
@@ -285,7 +286,10 @@ class Resize(Augmentation):
 
             # Add batch dim
             new_image = new_image[np.newaxis]
+            # Add channel dim for grayscale
+            if new_image.ndim == 3:
+                new_image = new_image[:,:,:,np.newaxis]
             resized.append(new_image)
 
-        values["images"] = np.concatenate(resized)
+        values[self.key] = np.concatenate(resized)
         return values
