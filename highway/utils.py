@@ -5,6 +5,10 @@ import os
 import sys
 from collections import OrderedDict
 
+def local_tmp(d="./tmp/"):
+    if not os.path.exists(d):
+        os.makedirs(d)
+    return d
 
 def get_ext(filename):
     name, ext = os.path.splitext(filename)
