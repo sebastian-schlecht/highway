@@ -88,6 +88,7 @@ setup(
     extras_require={
         'dev': [''],
         'test': ['pytest', 'tox', 'tox-pyenv'],
+        'contrib': ['nibabel', 'pydicom', 'medpy']
     },
 
     # If there are data files included in your packages that need to be

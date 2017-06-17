@@ -20,12 +20,14 @@ class ClfImgReader(Node):
         self.batch_size = batch_size
         self.shape = shape
         self.file_map = file_map
+        self.cache = None
 
         if not self.file_map:
             self.file_map, self.n_classes, self.classes = get_class_file_map(
                 self.data_dir)
 
-        self.cache = FIFOCache(cache_size)
+        if cache_size:
+            self.cache = FIFOCache(cache_size)
 
         super(ClfImgReader, self).__init__()
 
@@ -43,11 +45,16 @@ class ClfImgReader(Node):
             filename = self.data_dir + "/" + \
                 files[np.random.randint(len(files))]
 
-            image = self.cache.get(filename)
+            if self.cache
+                image = self.cache.get(filename)
+            else:
+                image = None
+
             if not image:
                 image = load_and_fit_image(
                     filename, self.shape)[np.newaxis]
-                self.cache.set(filename, image)
+                if self.cache:
+                    self.cache.set(filename, image)
 
             labels.append(one_hot)
             images.append(image)
@@ -72,7 +79,9 @@ class ImgReader(Node):
         self.batch_size = batch_size
         self.random = random
         self.once = once
-        self.cache = FIFOCache(cache_size)
+        self.cache = None
+        if cache_size:
+            self.cache = FIFOCache(cache_size)
         self.filenames = get_directory_filenames(self.data_dir, IMAGE_FILETYPES)
         self.n_files = len(filenames)
         self.gc = 0
@@ -93,10 +102,16 @@ class ImgReader(Node):
 
                 idx = self.gc
                 self.gc += 1
-            img = self.cache.get(idx)
+
+            if self.cache:
+                img = self.cache.get(idx)
+            else:
+                img = None
+
             if img is None:
                 img = load_image(self.data_dir + "/" + self.filenames[idx])
-                self.cache.set(idx, img)
+                if self.cache:
+                    self.cache.set(idx, img)
 
             payload.append(img)
             indexes.append(idx)
