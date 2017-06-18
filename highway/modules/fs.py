@@ -74,7 +74,7 @@ class ImgReader(Node):
         self.once = once
         self.cache = FIFOCache(cache_size)
         self.filenames = get_directory_filenames(self.data_dir, IMAGE_FILETYPES)
-        self.n_files = len(filenames)
+        self.n_files = len(self.filenames)
         self.gc = 0
         super(ImgReader, self).__init__()
 
@@ -86,7 +86,7 @@ class ImgReader(Node):
             if self.random:
                 idx = np.random.randint(self.n_files)
             else:
-                if self.gc > n_files - 1:
+                if self.gc > self.n_files - 1:
                     if self.once:
                         return
                     self.gc = 0

@@ -115,7 +115,7 @@ class Rotate(Augmentation):
             # todo
             return values
         images = values['images']
-        for idx in range(images.shape[0]):
+        for idx in range(len(images)):
             image = images[idx]
             rot_angle = np.random.randint(-self.angle, self.angle)
             new_image = rotate(
@@ -139,7 +139,7 @@ class Zoom(Augmentation):
             return values
 
         images = values['images']
-        for idx in range(images.shape[0]):
+        for idx in range(len(images)):
             image = images[idx]
             fac = np.random.uniform(1 - self.fac, 1 + self.fac)
             new_image = clipped_zoom(image, zoom_factor=fac, order=self.order)
