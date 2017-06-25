@@ -45,7 +45,7 @@ class ClfImgReader(Node):
             filename = self.data_dir + "/" + \
                 files[np.random.randint(len(files))]
 
-            if self.cache
+            if self.cache:
                 image = self.cache.get(filename)
             else:
                 image = None
