@@ -31,6 +31,8 @@ images, labels = p.dequeue()
 ```
 
 
+
+
 If you are handling massive data augmentations, you can distribute processing across different machines and scale augmentations according to the machines' CPU capabilities using the ZMQ transport layer. Note: Usually, ```bind``` is set to True on worker machines for the sink and False on the training machine for the source. The reason is to minimize port usage and thus the training machine collects data from all concurrent worker machines.
 
 ```python
