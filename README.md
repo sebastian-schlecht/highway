@@ -4,7 +4,7 @@ Multi-threaded data access pipeline for tensor data.
 ![CircleCI](https://circleci.com/gh/sebastian-schlecht/highway.svg?style=shield&circle-token=8ca49a7720b3ba3404a56f277d6a533c420b24cb)
 
 
-my feature
+my addition to an extended feature
 
 
 ## Install
